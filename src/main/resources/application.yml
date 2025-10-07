@@ -2,6 +2,10 @@ spring:
   data:
     mongodb:
       uri: mongodb://admin:123456@localhost:27017/order_service?authSource=admin
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
+      - org.springframework.boot.actuate.autoconfigure.security.servlet.ManagementWebSecurityAutoConfiguration
 
 jwt:
   signerKey: "3m47O+gM3Sc0lc9I5pMhfGFZMoqvbFtLoNs6Lmq9nOg="
@@ -9,4 +13,11 @@ jwt:
 server:
   port: 8081
 
-
+grpc:
+  client:
+    helloworld:  # tên tùy chọn
+      address: "static://localhost:9090"  # địa chỉ gRPC server
+      negotiation-type: plaintext
+app:
+  security:
+    enabled: false

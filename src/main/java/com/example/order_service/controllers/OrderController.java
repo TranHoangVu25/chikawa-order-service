@@ -3,7 +3,7 @@ package com.example.order_service.controllers;
 import com.example.order_service.dto.request.CreateOrderRequest;
 import com.example.order_service.dto.request.UpdateOrderRequest;
 import com.example.order_service.models.Order;
-import com.example.order_service.models.OrderItem;
+import com.example.order_service.repositories.OrderRepository;
 import com.example.order_service.services.OrderService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -21,15 +21,16 @@ import java.util.List;
 @RequestMapping("/api/v1/order")
 public class OrderController {
     OrderService orderService;
+    private final OrderRepository orderRepository;
 
-    @PostMapping("")
-    public Order createOrder(@AuthenticationPrincipal Jwt jwt,
-                             @RequestBody CreateOrderRequest request
-                                      ) {
-        Integer userId = Integer.valueOf(jwt.getClaimAsString("sub"));
-
-        return orderService.createOrder(userId, request);
-    }
+//    @PostMapping("")
+//    public Order createOrder(@AuthenticationPrincipal Jwt jwt,
+//                             @RequestBody CreateOrderRequest request
+//                                      ) {
+//        Integer userId = Integer.valueOf(jwt.getClaimAsString("sub"));
+//
+//        return orderService.createOrder(userId, request);
+//    }
 
     @GetMapping("")
     public List<Order> getAllOrders(){
@@ -47,5 +48,25 @@ public class OrderController {
             @RequestBody UpdateOrderRequest request
             ){
         return orderService.updateOrder(orderId,request);
+    }
+
+    @GetMapping("/orders")
+    public List<Order> getOrdersByUserId(
+            @AuthenticationPrincipal Jwt jwt
+    ){
+        Integer userId = Integer.parseInt(jwt.getClaimAsString("sub"));
+        return orderService.findOrdersByUserId(userId);
+    }
+
+    @PostMapping
+    public Order createOrder(@RequestBody CreateOrderRequest request,
+                                              @AuthenticationPrincipal Jwt jwt ) {
+        Integer userId = Integer.parseInt(jwt.getClaimAsString("sub"));
+
+        System.out.println("✅ Nhận đơn hàng từ cart_service:");
+        System.out.println("Items: " + request.getItems());
+
+        // Ở đây em có thể gọi OrderService để lưu DB
+        return orderService.createOrder(userId,request);
     }
 }

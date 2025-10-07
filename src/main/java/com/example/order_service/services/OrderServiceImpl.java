@@ -40,18 +40,16 @@ public class OrderServiceImpl implements OrderService {
     public void deleteOrderItem(String OrderId) {orderRepository.deleteById(OrderId);}
 
     @Override
-    public Order findByUserId(Integer userId) {
-        return orderRepository.findByUserId(userId)
-                .orElse(null);
-//                .orElseThrow(()-> new RuntimeException("Order id not found"));
-    }
-
-    @Override
     public Order updateOrder(String orderId, UpdateOrderRequest request) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(()-> new RuntimeException("Order not existed"));
         order.setStatus(request.getStatus());
         return orderRepository.save(order);
+    }
+
+    @Override
+    public List<Order> findOrdersByUserId(int userId) {
+        return orderRepository.findByUserId(userId);
     }
 
 }

@@ -16,9 +16,10 @@ import java.util.List;
 @Document(collection = "order_service")
 public class Order {
     @Id
-    String id;
-    Integer user_id;
+    String orderId;
+    Integer userId;
     List<OrderItem> orderItems;
     String status;
     LocalDateTime createdAt;
+    Double totalPrice;
 }

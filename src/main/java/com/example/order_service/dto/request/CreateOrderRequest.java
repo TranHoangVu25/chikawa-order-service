@@ -14,5 +14,6 @@ import java.util.List;
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class CreateOrderRequest {
+    private int userId;
     List<OrderItem> items;
 }

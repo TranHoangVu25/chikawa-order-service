@@ -23,7 +23,7 @@ public class OrderServiceImplement implements OrderService {
     public Order createOrder(Integer userId, CreateOrderRequest request) {
         Order order = new Order()
                 .builder()
-                .user_id(userId)
+                .userId(userId)
                 .orderItems(request.getItems())
                 .status(String.valueOf(Status.PENDING))
                 .createdAt(LocalDateTime.now())
@@ -51,5 +51,4 @@ public class OrderServiceImplement implements OrderService {
     public List<Order> findOrdersByUserId(int userId) {
         return orderRepository.findByUserId(userId);
     }
-
 }

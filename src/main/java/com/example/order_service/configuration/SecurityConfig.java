@@ -1,7 +1,6 @@
 package com.example.order_service.configuration;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -38,10 +37,10 @@ public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Excepti
     httpSecurity.authorizeHttpRequests(
             request ->
                     request
-                            .requestMatchers(HttpMethod.POST, USER_END_POINT).hasRole("CUSTOMER")
-                            .requestMatchers(HttpMethod.PUT, USER_END_POINT).hasRole("CUSTOMER")
-                            .requestMatchers(HttpMethod.DELETE, USER_END_POINT).hasRole("CUSTOMER")
-                            .requestMatchers(HttpMethod.PUT, USER_END_POINT).hasRole("CUSTOMER")
+                            .requestMatchers(HttpMethod.POST, USER_END_POINT).hasRole("customer")
+                            .requestMatchers(HttpMethod.PUT, USER_END_POINT).hasRole("customer")
+                            .requestMatchers(HttpMethod.DELETE, USER_END_POINT).hasRole("customer")
+                            .requestMatchers(HttpMethod.PUT, USER_END_POINT).hasRole("customer")
 //                            .requestMatchers(HttpMethod.GET, ADMIN_END_POINT).hasRole("ADMIN")
                             .anyRequest().authenticated());
 

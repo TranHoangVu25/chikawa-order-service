@@ -1,16 +1,13 @@
 package com.example.order_service.controllers;
 
-import com.example.order_service.dto.request.CreateOrderRequest;
 import com.example.order_service.dto.request.UpdateOrderRequest;
 import com.example.order_service.grpc.OrderServiceImpl;
 import com.example.order_service.models.Order;
-import com.example.order_service.repositories.OrderRepository;
 import com.example.order_service.services.OrderService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
@@ -50,5 +47,6 @@ public class OrderController {
     ){
         Integer userId = Integer.parseInt(jwt.getClaimAsString("userId"));
         return orderService.findOrdersByUserId(userId);
+
     }
 }

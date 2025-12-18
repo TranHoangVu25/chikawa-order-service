@@ -1,10 +1,11 @@
-package com.example.order_service.services;
+package com.example.order_service.services.Impl;
 
 import com.example.order_service.dto.request.CreateOrderRequest;
 import com.example.order_service.dto.request.UpdateOrderRequest;
 import com.example.order_service.enums.Status;
 import com.example.order_service.models.Order;
 import com.example.order_service.repositories.OrderRepository;
+import com.example.order_service.services.OrderService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -24,9 +25,11 @@ public class OrderServiceImplement implements OrderService {
         Order order = new Order()
                 .builder()
                 .userId(userId)
-                .orderItems(request.getItems())
                 .status(String.valueOf(Status.PENDING))
-                .createdAt(LocalDateTime.now())
+                .promotionCode(request.getPromotionCode())
+                .confirmedAt(LocalDateTime.now())
+                .orderItems(request.getItems())
+                .deliveryAddress(request.getDeliveryAddress())
                 .build();
         return orderRepository.save(order);
     }

@@ -9,21 +9,25 @@ import com.example.order_service.repositories.OrderRepository;
 import io.grpc.stub.StreamObserver;
 import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.server.service.GrpcService;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
 
 @GrpcService
 @Slf4j
 public class OrderServiceImpl extends OrderServiceGrpc.OrderServiceImplBase {
+
     private final OrderRepository orderRepository;
 
     public OrderServiceImpl(OrderRepository orderRepository) {
         this.orderRepository = orderRepository;
     }
 
+    // =====================================================
+    // Cart Service -> Order Service
+    // =====================================================
     @Override
     public void createOrder(
             CartRequest request,
@@ -45,12 +49,17 @@ public class OrderServiceImpl extends OrderServiceGrpc.OrderServiceImplBase {
                         .build())
                 .toList();
 
+        double totalPrice = 0;
+        for (OrderItem orderItem : orderItems) {
+            totalPrice += orderItem.getPrice() * orderItem.getQuantity();
+        }
+
         Order order = Order.builder()
-                .orderId(orderId)
+                .id(orderId)
                 .userId(request.getUserId())
                 .orderItems(orderItems)
                 .status(Status.PENDING.name())
-                .createdAt(LocalDateTime.now())
+                .confirmedAt(LocalDateTime.now())
                 .build();
 
         orderRepository.save(order);
@@ -66,56 +75,55 @@ public class OrderServiceImpl extends OrderServiceGrpc.OrderServiceImplBase {
         log.info("✅ Order {} created successfully", orderId);
     }
 
-    // ===================================================
-    // PAYMENT → ORDER : Get Snapshot
-    // ===================================================
+    // =====================================================
+    // Payment Service -> Order Service
+    // =====================================================
     @Override
-    public void getOrderSnapshot(GetOrderRequest request,
-                                 StreamObserver<OrderSnapshotResponse> responseObserver) {
+    public void getOrderSnapshot(
+            GetOrderSnapshotRequest request,
+            StreamObserver<OrderSnapshotResponse> responseObserver
+    ) {
 
-        Order order = orderRepository
-                .findByOrderIdAndUserId(request.getOrderId(), Integer.parseInt(request.getUserId()))
-                .orElseThrow(() -> new RuntimeException("Order not found"));
+        log.info("💳 Payment requests snapshot for order {}", request.getOrderId());
 
-        OrderSnapshotResponse response = OrderSnapshotResponse.newBuilder()
-                .setOrderId(order.getOrderId())
-                .setUserId(String.valueOf(order.getUserId()))
-//                .setTotalPrice(order.getTotalPrice())
-                .setTotalPrice(1000)
-                .setSnapshotAt(LocalDateTime.now().toString())
-                .addAllItems(order.getOrderItems().stream()
-                        .map(i -> com.example.grpc.OrderItem.newBuilder()
-                                .setProductId(i.getId())
-                                .setName(i.getName())
-                                .setPrice(i.getPrice())
-                                .setQuantity(i.getQuantity())
-                                .build())
-                        .toList())
-                .build();
+        Order order = orderRepository.findById(request.getOrderId())
+                .orElseThrow(() ->
+                        new RuntimeException("Order not found: " + request.getOrderId())
+                );
+
+        // Map OrderItem (entity) -> OrderItem (gRPC)
+        List<com.example.grpc.OrderItem> grpcItems =
+                order.getOrderItems().stream()
+                        .map(item ->
+                                com.example.grpc.OrderItem.newBuilder()
+                                        .setProductId(item.getId())
+                                        .setName(item.getName())
+                                        .setPrice(item.getPrice())
+                                        .setQuantity(item.getQuantity())
+                                        .build()
+                        )
+                        .toList();
+
+        double totalPrice = 0;
+        for (OrderItem item : order.getOrderItems()) {
+            totalPrice += item.getPrice() * item.getQuantity();
+        }
+
+        OrderSnapshotResponse response =
+                OrderSnapshotResponse.newBuilder()
+                        .setOrderId(order.getId())
+                        .setUserId(order.getUserId())
+                        .setTotalPrice(totalPrice)
+                        .setSnapshotAt(
+                                order.getConfirmedAt()
+                                        .format(DateTimeFormatter.ISO_DATE_TIME)
+                        )
+                        .addAllItems(grpcItems)
+                        .build();
 
         responseObserver.onNext(response);
         responseObserver.onCompleted();
-    }
 
-    // ===================================================
-    // PAYMENT → ORDER : Update Status
-    // ===================================================
-    @Override
-    public void updateOrderStatus(UpdateOrderStatusRequest request,
-                                  StreamObserver<UpdateOrderStatusResponse> responseObserver) {
-
-        Order order = orderRepository
-                .findByOrderId(request.getOrderId())
-                .orElseThrow(() -> new RuntimeException("Order not found"));
-
-        order.setStatus(request.getStatus());
-        orderRepository.save(order);
-
-        UpdateOrderStatusResponse response = UpdateOrderStatusResponse.newBuilder()
-                .setSuccess(true)
-                .build();
-
-        responseObserver.onNext(response);
-        responseObserver.onCompleted();
+        log.info("📸 Snapshot for order {} sent to Payment Service", order.getId());
     }
 }

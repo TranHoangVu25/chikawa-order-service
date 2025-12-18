@@ -1,5 +1,6 @@
 package com.example.order_service.dto.request;
 
+import com.example.order_service.models.DeliveryAddress;
 import com.example.order_service.models.OrderItem;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -14,6 +15,8 @@ import java.util.List;
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class CreateOrderRequest {
-    private int userId;
+    Integer userId;
+    String promotionCode;
     List<OrderItem> items;
+    DeliveryAddress deliveryAddress;
 }

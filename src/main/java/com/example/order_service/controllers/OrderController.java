@@ -47,6 +47,5 @@ public class OrderController {
     ){
         Integer userId = Integer.parseInt(jwt.getClaimAsString("userId"));
         return orderService.findOrdersByUserId(userId);
-
     }
 }

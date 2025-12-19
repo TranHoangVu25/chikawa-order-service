@@ -3,6 +3,7 @@ package com.example.order_service.grpc;
 // Import các lớp Message độc lập đã được sinh ra
 import com.example.grpc.*;
 import com.example.order_service.enums.Status;
+import com.example.order_service.models.DeliveryAddress;
 import com.example.order_service.models.Order;
 import com.example.order_service.models.OrderItem;
 import com.example.order_service.repositories.OrderRepository;
@@ -34,7 +35,7 @@ public class OrderServiceImpl extends OrderServiceGrpc.OrderServiceImplBase {
             StreamObserver<OrderResponse> responseObserver
     ) {
 
-        log.info("📦 Received order from user {}", request.getUserId());
+        log.info("Received order from user {}", request.getUserId());
 
         String orderId = UUID.randomUUID().toString();
 
@@ -54,12 +55,22 @@ public class OrderServiceImpl extends OrderServiceGrpc.OrderServiceImplBase {
             totalPrice += orderItem.getPrice() * orderItem.getQuantity();
         }
 
+        DeliveryAddress address =  new DeliveryAddress().builder()
+                .recipientName(request.getAddress().getRecipientName())
+                .phoneNumber(request.getAddress().getPhoneNumber())
+                .country(request.getAddress().getCountry())
+                .province(request.getAddress().getProvince())
+                .city(request.getAddress().getCity())
+                .locationDetail(request.getAddress().getLocationDetail())
+                .build();
+
         Order order = Order.builder()
                 .id(orderId)
                 .userId(request.getUserId())
                 .orderItems(orderItems)
                 .status(Status.PENDING.name())
                 .confirmedAt(LocalDateTime.now())
+                .deliveryAddress(address)
                 .build();
 
         orderRepository.save(order);
@@ -72,7 +83,7 @@ public class OrderServiceImpl extends OrderServiceGrpc.OrderServiceImplBase {
         responseObserver.onNext(response);
         responseObserver.onCompleted();
 
-        log.info("✅ Order {} created successfully", orderId);
+        log.info("Order {} created successfully", orderId);
     }
 
     // =====================================================
@@ -84,7 +95,7 @@ public class OrderServiceImpl extends OrderServiceGrpc.OrderServiceImplBase {
             StreamObserver<OrderSnapshotResponse> responseObserver
     ) {
 
-        log.info("💳 Payment requests snapshot for order {}", request.getOrderId());
+        log.info("Payment requests snapshot for order {}", request.getOrderId());
 
         Order order = orderRepository.findById(request.getOrderId())
                 .orElseThrow(() ->
@@ -124,6 +135,6 @@ public class OrderServiceImpl extends OrderServiceGrpc.OrderServiceImplBase {
         responseObserver.onNext(response);
         responseObserver.onCompleted();
 
-        log.info("📸 Snapshot for order {} sent to Payment Service", order.getId());
+        log.info("Snapshot for order {} sent to Payment Service", order.getId());
     }
 }

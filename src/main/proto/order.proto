@@ -30,6 +30,7 @@ service OrderService {
 message CartRequest {
   int32 userId = 1;
   repeated CartItem items = 2;
+  DeliveryAddress address = 3;
 }
 
 message CartItem {
@@ -41,6 +42,14 @@ message CartItem {
   string variantId = 6;
 }
 
+message DeliveryAddress {
+  string recipientName = 1;
+  string phoneNumber = 2;
+  string country = 3;
+  string province = 4;
+  string city = 5;
+  string locationDetail = 6;
+}
 //
 // =======================================
 //              ORDER

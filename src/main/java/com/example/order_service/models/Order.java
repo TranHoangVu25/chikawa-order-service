@@ -53,7 +53,6 @@ public class Order {
     @Field("delivery_address")
     private DeliveryAddress deliveryAddress;
 
-    /* ===== Business Logic ===== */
 
     public void pending() {
         this.status = "pending";
